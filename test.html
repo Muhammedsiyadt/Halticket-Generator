@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admission Form - Imam Gazzali Academy</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Include PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <!-- Include html2canvas for capturing the form -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Include jsPDF with better capabilities -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Custom Styles -->
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 600px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        animation: fadeIn 0.8s ease-in-out;
+      }
+
+      .logo-container {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+        background-color: #764ba2;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 28px;
+        color: #764ba2;
+        margin-bottom: 5px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      h3 {
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        outline: none;
+        transition: 0.3s;
+        box-sizing: border-box;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      input:focus,
+      select:focus {
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+      }
+
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      button {
+        flex: 1;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+
+      button:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        transform: scale(1.02);
+      }
+
+      button.preview {
+        background: linear-gradient(135deg, #36d1dc, #5b86e5);
+      }
+
+      button.preview:hover {
+        background: linear-gradient(135deg, #5b86e5, #36d1dc);
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        overflow: auto;
+      }
+
+      .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        animation: modalFadeIn 0.4s;
+      }
+
+      .close {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: #333;
+      }
+
+      #pdfPreview {
+        width: 100%;
+        height: 500px;
+      }
+
+      #pdfTemplate {
+        display: none;
+        width: 800px;
+        background-color: white;
+        padding: 40px;
+        box-sizing: border-box;
+      }
+
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #764ba2;
+      }
+
+      .pdf-logo {
+        display: flex;
+        align-items: center;
+      }
+
+      .pdf-logo-img {
+        width: 60px;
+        height: 60px;
+        background-color: #764ba2;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
+        color: white;
+        margin-right: 15px;
+      }
+
+      .pdf-logo-text h1 {
+        margin: 0;
+        color: #764ba2;
+        font-size: 24px;
+      }
+
+      .pdf-logo-text p {
+        margin: 0;
+        color: #667eea;
+        font-size: 14px;
+      }
+
+      .pdf-title {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .pdf-title h2 {
+        font-size: 26px;
+        color: #764ba2;
+        margin: 0;
+      }
+
+      .pdf-info {
+        margin-bottom: 30px;
+      }
+
+      .pdf-row {
+        display: flex;
+        margin-bottom: 15px;
+      }
+
+      .pdf-label {
+        width: 30%;
+        font-weight: bold;
+        color: #555;
+      }
+
+      .pdf-value {
+        width: 70%;
+        color: #333;
+      }
+
+      .pdf-footer {
+        margin-top: 60px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .signature-box {
+        border-top: 1px solid #999;
+        width: 200px;
+        padding-top: 10px;
+        text-align: center;
+        color: #555;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          width: 90%;
+          padding: 20px;
+        }
+
+        h2 {
+          font-size: 24px;
+        }
+
+        .button-container {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo-container">
+        <div class="logo">🎓</div>
+        <h2>Imam Gazzali Academy</h2>
+        <h3>Admission Form</h3>
+      </div>
+      <form id="admissionForm">
+        <div class="form-group">
+          <label for="name">Student Name</label>
+          <input type="text" id="name" placeholder="Full name of student" required />
+        </div>
+
+        <div class="form-group">
+          <label for="fatherName">Father's Name</label>
+          <input type="text" id="fatherName" placeholder="Father's full name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="motherName">Mother's Name</label>
+          <input type="text" id="motherName" placeholder="Mother's full name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" placeholder="Complete home address" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" placeholder="Contact number" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Valid email address" required />
+        </div>
+
+        <div class="form-group">
+          <label for="course">Select Course</label>
+          <select id="course" required>
+            <option value="" disabled selected>Choose a course</option>
+            <option value="Science">Science</option>
+            <option value="Commerce">Commerce</option>
+            <option value="Arts">Arts</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="studentImage">Upload Student Image</label>
+          <input type="file" id="studentImage" accept="image/*" required />
+          <small class="form-text text-muted">Upload a clear passport-sized photo.</small>
+        </div>
+
+        <div class="button-container">
+          <button type="button" class="preview" onclick="previewPDF()">Preview PDF</button>
+          <button type="button" onclick="generatePDF()">Download PDF</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal for PDF Preview -->
+    <div id="pdfModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 style="color: #333">Preview Admission Form</h2>
+        <iframe id="pdfPreview" frameborder="0"></iframe>
+      </div>
+    </div>
+
+    <!-- Hidden PDF Template for html2canvas to capture -->
+    <div id="pdfTemplate">
+      <div class="pdf-header">
+        <div class="pdf-logo">
+          <div class="pdf-logo-img">🎓</div>
+          <div class="pdf-logo-text">
+            <h1>Imam Gazzali Academy</h1>
+            <p>Excellence in Education</p>
+          </div>
+        </div>
+        <div class="pdf-date">
+          <p>Date: <span id="currentDate"></span></p>
+          <p>Ref: IGA/<span id="refNumber"></span></p>
+        </div>
+      </div>
+
+      <div class="pdf-title">
+        <h2>ADMISSION FORM</h2>
+      </div>
+
+      <div class="pdf-info">
+        <div class="pdf-row">
+          <div class="pdf-label">Student Name:</div>
+          <div class="pdf-value" id="pdf-name"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Father's Name:</div>
+          <div class="pdf-value" id="pdf-fatherName"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Mother's Name:</div>
+          <div class="pdf-value" id="pdf-motherName"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Address:</div>
+          <div class="pdf-value" id="pdf-address"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Phone Number:</div>
+          <div class="pdf-value" id="pdf-phone"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Email Address:</div>
+          <div class="pdf-value" id="pdf-email"></div>
+        </div>
+        <div class="pdf-row">
+          <div class="pdf-label">Selected Course:</div>
+          <div class="pdf-value" id="pdf-course"></div>
+        </div>
+      </div>
+
+      <div class="pdf-notice">
+        <p>
+          <strong>Note:</strong> Please bring this admission form along with the
+          following documents during your interview:
+        </p>
+        <ul>
+          <li>Previous academic records</li>
+          <li>Two passport size photographs</li>
+          <li>Identification proof</li>
+          <li>Address proof</li>
+        </ul>
+      </div>
+
+      <div class="pdf-footer">
+        <div class="signature-box">Student's Signature</div>
+        <div class="signature-box">Guardian's Signature</div>
+        <div class="signature-box">Authorized Signature</div>
+      </div>
+    </div>
+
+    <script>
+      // Initialization
+      window.jsPDF = window.jspdf.jsPDF;
+
+      // Format current date
+      function formatDate(date) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+      }
+
+      // Generate random reference number
+      function generateRefNumber() {
+        const now = new Date();
+        const year = now.getFullYear().toString().substr(-2);
+        const randomNum = Math.floor(10000 + Math.random() * 90000);
+        return `${year}${randomNum}`;
+      }
+
+      // Validate form
+      function validateForm() {
+        const fields = ['name', 'fatherName', 'motherName', 'address', 'phone', 'email', 'course', 'studentImage'];
+        let isValid = true;
+
+        fields.forEach(field => {
+          const value = document.getElementById(field).value.trim();
+          if (!value) {
+            document.getElementById(field).style.boxShadow = '0 0 5px red';
+            isValid = false;
+          } else {
+            document.getElementById(field).style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
+          }
+        });
+
+        return isValid;
+      }
+
+      // Populate PDF template with form data
+      function populatePDFTemplate() {
+        const fields = ['name', 'fatherName', 'motherName', 'address', 'phone', 'email', 'course'];
+
+        fields.forEach(field => {
+          const value = document.getElementById(field).value;
+          document.getElementById(`pdf-${field}`).textContent = value;
+        });
+
+        // Set current date and reference number
+        document.getElementById('currentDate').textContent = formatDate(new Date());
+        document.getElementById('refNumber').textContent = generateRefNumber();
+
+        // Handle image upload
+        const imageInput = document.getElementById('studentImage');
+        if (imageInput.files && imageInput.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.borderRadius = '50%';
+            document.querySelector('.pdf-logo-img').innerHTML = '';
+            document.querySelector('.pdf-logo-img').appendChild(img);
+          };
+          reader.readAsDataURL(imageInput.files[0]);
+        }
+      }
+
+      // Preview PDF
+      function previewPDF() {
+        if (!validateForm()) {
+          alert('Please fill all required fields correctly.');
+          return;
+        }
+
+        // Populate PDF template
+        populatePDFTemplate();
+
+        // Show PDF template
+        const pdfTemplate = document.getElementById('pdfTemplate');
+        pdfTemplate.style.display = 'block';
+
+        // Use html2canvas to capture the template
+        html2canvas(pdfTemplate, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          // Hide template after capture
+          pdfTemplate.style.display = 'none';
+
+          // Convert to PDF
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+
+          // A4 dimensions: 210 x 297 mm
+          const imgData = canvas.toDataURL('image/png');
+          const imgWidth = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          // Generate blob for preview
+          const pdfBlob = pdf.output('blob');
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+
+          // Display in iframe
+          document.getElementById('pdfPreview').src = pdfUrl;
+          document.getElementById('pdfModal').style.display = 'block';
+        });
+      }
+
+      // Generate and download PDF
+      function generatePDF() {
+        if (!validateForm()) {
+          alert('Please fill all required fields correctly.');
+          return;
+        }
+
+        // Populate PDF template
+        populatePDFTemplate();
+
+        // Show PDF template
+        const pdfTemplate = document.getElementById('pdfTemplate');
+        pdfTemplate.style.display = 'block';
+
+        // Use html2canvas to capture the template
+        html2canvas(pdfTemplate, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true,
+          logging: false
+        }).then(canvas => {
+          // Hide template after capture
+          pdfTemplate.style.display = 'none';
+
+          // Convert to PDF
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+
+          // A4 dimensions: 210 x 297 mm
+          const imgData = canvas.toDataURL('image/png');
+          const imgWidth = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          // Get student name for filename
+          const studentName = document.getElementById('name').value.trim();
+          const safeFileName = studentName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+          // Save PDF
+          pdf.save(`Admission_Form_${safeFileName}.pdf`);
+        });
+      }
+
+      // Close modal
+      function closeModal() {
+        document.getElementById('pdfModal').style.display = 'none';
+      }
+
+      // Close modal when clicking outside of it
+      window.onclick = function(event) {
+        const modal = document.getElementById('pdfModal');
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      };
+    </script>
+  </body>
+</html>
